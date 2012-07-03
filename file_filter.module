@@ -1,0 +1,84 @@
+<?php
+
+/**
+ * @file
+ * Provides a filter to convert file placeholders.
+ */
+
+
+/**
+ * Implements hook_filter_info().
+ */
+function file_filter_filter_info() {
+  return array(
+    'file_filter' => array(
+      'title' => t('File Filter'),
+      'description' => t('Provides a filter to convert file placeholders.'),
+      'process callback' => '_file_filter_process',
+      'settings callback' => '_file_filter_settings',
+      'tips callback' => '_file_filter_tips',
+    ),
+  );
+}
+
+/**
+ * Filter process callback.
+ */
+function _file_filter_process($text, $format) {
+  // Look for [fid:*:*:*] token formats.
+  if ( preg_match_all('/\[fid(\:(.+))?\]/isU', $text, $matches) ) {
+    foreach ( $matches[0] as $key => $match ) {
+
+      // Parse arguments as an array.
+      $arg_match = $match;
+      $arg_match = str_replace('[', '', $arg_match);
+      $arg_match = str_replace(']', '', $arg_match);
+      $args = explode(':', $arg_match);
+
+      // Get fid and type.
+      $dummy = array_shift($args); // we don't need this dummy value, so shift it off the array.
+      $fid = array_shift($args);
+      $type = array_shift($args);
+
+      // Load file object from database.
+      if ( $file = file_load($fid) ) {
+        $replace = '';
+
+        // Render differently based on display types.
+        if ( $type == 'image_style' ) {
+          $replace = theme('image_style', array(
+            'style_name' => $args[0],
+            'path' => $file->uri,
+          ));
+        }
+        else {
+          $replace = file_create_url($file->uri);
+        }
+
+        $text = str_replace($match, $replace, $text);
+      }
+    }
+  }
+  return $text;
+}
+
+/**
+ * Filter settings callback.
+ */
+function _file_filter_settings($form, &$form_state, $filter, $format, $defaults) {
+  return array();
+}
+
+/**
+ * Filter tips callback.
+ */
+function _file_filter_tips($format, $long = FALSE) {
+  if ( $long ) {
+    // @TODO
+    return t('Long Tips');
+  }
+  else {
+    // @TODO
+    return t('Short Tips');
+  }
+}

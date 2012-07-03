@@ -1,0 +1,4 @@
+name = File Filter
+description = Provides a filter to convert file placeholders.
+package = Input filters
+core = 7.x
