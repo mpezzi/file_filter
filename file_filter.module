@@ -7,6 +7,26 @@
 
 
 /**
+ * Implements hook_theme().
+ */
+function file_filter_theme() {
+  return array(
+    'insert_file_filter_absolute' => array(
+      'arguments' => array('item' => NULL, 'widget' => NULL),
+      'template' => 'insert-file-filter-absolute',
+      'path' => drupal_get_path('module', 'file_filter') . '/theme',
+      'file' => 'theme.inc',
+    ),
+    'insert_file_filter_image' => array(
+      'arguments' => array('item' => NULL, 'widget' => NULL),
+      'template' => 'insert-file-filter-image',
+      'path' => drupal_get_path('module', 'file_filter') . '/theme',
+      'file' => 'theme.inc',
+    ),
+  );
+}
+
+/**
  * Implements hook_filter_info().
  */
 function file_filter_filter_info() {
@@ -19,6 +39,46 @@ function file_filter_filter_info() {
       'tips callback' => '_file_filter_tips',
     ),
   );
+}
+
+/**
+ * Implements hook_insert_styles().
+ */
+function file_filter_insert_styles() {
+  return array(
+    'file_filter_absolute' => array(
+      'label' => t('File Filter: Absolute URL'),
+      'weight' => -9,
+    ),
+    'file_filter_image' => array(
+      'label' => t('File Filter: Image'),
+      'weight' => -8,
+    ),
+  );
+}
+
+/**
+ * Implements hook_insert_content().
+ */
+function file_filter_insert_content($item, $style, $widget) {
+  $style_name = $style['name'];
+
+  if ( !empty($item['fid']) ) {
+    $file = file_load($item['fid']);
+    $info = @pathinfo($file->uri);
+    if ( in_array(strtolower($info['extension']), array('png', 'jpg', 'jpeg', 'gif')) ) {
+      $style_name = 'file_filter_image';
+    }
+
+    if ( $style_name == 'file_filter_image' ) {
+      return theme('insert_file_filter_image', array('item' => $item, 'widget' => $widget));
+    }
+    else {
+      return theme('insert_file_filter_absolute', array('item' => $item, 'widget' => $widget));
+    }
+  }
+
+  return '';
 }
 
 /**
