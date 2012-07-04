@@ -25,6 +25,8 @@ function file_filter_filter_info() {
  * Filter process callback.
  */
 function _file_filter_process($text, $format) {
+  $types = module_invoke_all('file_filter_type');
+
   // Look for [fid:*:*:*] token formats.
   if ( preg_match_all('/\[fid(\:(.+))?\]/isU', $text, $matches) ) {
     foreach ( $matches[0] as $key => $match ) {
@@ -42,23 +44,30 @@ function _file_filter_process($text, $format) {
 
       // Load file object from database.
       if ( $file = file_load($fid) ) {
-        $replace = '';
 
-        // Render differently based on display types.
-        if ( $type == 'image_style' ) {
-          $replace = theme('image_style', array(
-            'style_name' => $args[0],
-            'path' => $file->uri,
-          ));
+        // Prepend file object to arguments.
+        array_unshift($args, $file);
+
+        // Render differently based on process types.
+        if ( isset($types[$type]) ) {
+          $replace = call_user_func_array($types[$type]['process callback'], $args);
         }
         else {
-          $replace = file_create_url($file->uri);
+          $replace = variable_get('file_filter_type_not_found', t('File Filter Process %type was not found.', array(
+            '%type' => $type,
+          )));
         }
-
-        $text = str_replace($match, $replace, $text);
       }
+      else {
+        $replace = variable_get('file_filter_file_not_found', t('File %fid was not found.', array(
+          '%fid' => $fid,
+        )));
+      }
+
+      $text = str_replace($match, $replace, $text);
     }
   }
+
   return $text;
 }
 
@@ -82,4 +91,54 @@ function _file_filter_tips($format, $long = FALSE) {
     // @TODO: Add short tips.
     return t('Short Tips');
   }
+}
+
+/**
+ * Implements hook_file_filter_type().
+ */
+function file_filter_file_filter_type() {
+  return array(
+    'absolute' => array(
+      'process callback' => '_file_filter_process_absolute',
+    ),
+    'relative' => array(
+      'process callback' => '_file_filter_process_relative',
+    ),
+    'image' => array(
+      'process callback' => '_file_filter_process_image',
+    ),
+  );
+}
+
+/**
+ * Filter Process Type: Absolute
+ */
+function _file_filter_process_absolute($file) {
+  return file_create_url($file->uri);
+}
+
+/**
+ * Filter Process Type: Relative
+ */
+function _file_filter_process_relative($file) {
+  return base_path() . str_replace($GLOBALS['base_url'] . '/', '', file_create_url($file->uri));
+}
+
+/**
+ * Filter Process Type: Image
+ */
+function _file_filter_process_image($file, $style_name = NULL) {
+  if ( !is_null($style_name) ) {
+    $output = theme('image_style', array(
+      'path' => $file->uri,
+      'style_name' => $style_name,
+    ));
+  }
+  else {
+    $output = theme('image', array(
+      'path' => $file->uri,
+    ));
+  }
+
+  return $output;
 }
