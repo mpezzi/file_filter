@@ -66,6 +66,7 @@ function _file_filter_process($text, $format) {
  * Filter settings callback.
  */
 function _file_filter_settings($form, &$form_state, $filter, $format, $defaults) {
+  // @TODO: Add filter configuration settings.
   return array();
 }
 
@@ -74,11 +75,11 @@ function _file_filter_settings($form, &$form_state, $filter, $format, $defaults)
  */
 function _file_filter_tips($format, $long = FALSE) {
   if ( $long ) {
-    // @TODO
+    // @TODO: Add long tips.
     return t('Long Tips');
   }
   else {
-    // @TODO
+    // @TODO: Add short tips.
     return t('Short Tips');
   }
 }
