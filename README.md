@@ -22,9 +22,9 @@ Ut enim ad minim veniam, quis nostrud exercitation.
 <pre>
 Lorem ipsum dolor sit amet, consectetur adipisicing elit.
 
-http://example.com/sites/default/files/images/style/path/example.jpg
+http://example.com/sites/default/files/images/path/example.jpg
 
-&lt;img typeof=&quot;foaf:Image&quot; src=&quot;http://example.com/sites/default/files/images/style/medium/path/example.jpg&quot;&gt;
+&lt;img typeof=&quot;foaf:Image&quot; src=&quot;http://example.com/sites/default/files/images/path/example.jpg&quot;&gt;
 
 Ut enim ad minim veniam, quis nostrud exercitation.
 </pre>
